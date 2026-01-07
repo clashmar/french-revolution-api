@@ -1,6 +1,7 @@
 @french_revolution_api_HostAddress = http://localhost:5209
 
-GET {{french_revolution_api_HostAddress}}/weatherforecast/
+GET {{french_revolution_api_HostAddress}}/french-revolution/
 Accept: application/json
 
 ###
+ 
