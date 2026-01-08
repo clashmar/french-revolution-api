@@ -1,37 +1,26 @@
 using french_revolution_api.Models;
+using french_revolution_api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace french_revolution_api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CharactersController : Controller
+public class CharactersController(ICharacterService characterService) : Controller
 {
-    private static readonly List<Character> Characters = 
-    [
-        new()
-        {
-            Id = 1,
-            Name = "Georges Danton",
-            Profession = "Lawyer"
-        },
-        new()
-        {
-            Id = 2,
-            Name = "Camille Desmoulins",
-            Profession = "Journalist"
-        },
-        new()
-        {
-            Id = 3,
-            Name = "Maximilien Robespierre",
-            Profession = "Lawyer"
-        }
-    ];
-    
     [HttpGet]
     public async Task<ActionResult<List<Character>>> GetCharacters()
     {
-        return await Task.FromResult(Ok(Characters));
+        var characters = await characterService.GetAllCharactersAsync();
+        return Ok(characters);
     }
-}
+    
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Character>> GetCharacterById(int id)
+    {
+        var character = await characterService.GetCharacterByIdAsync(id);
+        return character is null ? 
+            NotFound("Could not find character.") : 
+            Ok(character);
+    }
+}  
