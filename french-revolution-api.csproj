@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>french_revolution_api</RootNamespace>
+        <UserSecretsId>df8f0eb1-db32-4bea-85e8-8f57b0aae8e0</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

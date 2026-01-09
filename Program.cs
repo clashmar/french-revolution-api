@@ -21,6 +21,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+    
+    var config = new ConfigurationBuilder()
+        .AddUserSecrets<Program>()
+        .Build();
 } 
 
 app.UseHttpsRedirection();

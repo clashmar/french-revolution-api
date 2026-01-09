@@ -1,64 +1,102 @@
+using french_revolution_api.Data;
 using french_revolution_api.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace french_revolution_api.Services;
 
 public interface ICharacterService
 {
-    Task<List<Character>> GetAllCharactersAsync();
-    Task<Character?> GetCharacterByIdAsync(int id);
-    Task<Character> AddCharacterAsync(Character character);
-    Task<bool> UpdateCharacterAsync(Character character);
+    Task<List<CharacterResponse>> GetAllCharactersAsync();
+    Task<CharacterResponse?> GetCharacterByIdAsync(int id);
+    Task<CharacterResponse?> AddCharacterAsync(CharacterRequest request);
+    Task<CharacterResponse?> UpdateCharacterAsync(int id, CharacterRequest request);
     Task<bool> DeleteCharacterAsync(int id);
 }
 
-public class CharacterService : ICharacterService
+public class CharacterService(AppDbContext context) : ICharacterService
 {
-    private static readonly List<Character> Characters = 
-    [
-        new()
+    public async Task<List<CharacterResponse>> GetAllCharactersAsync()
+    {
+        try
         {
-            Id = 1,
-            Name = "Georges Danton",
-            Profession = "Lawyer"
-        },
-        new()
-        {
-            Id = 2,
-            Name = "Camille Desmoulins",
-            Profession = "Journalist"
-        },
-        new()
-        {
-            Id = 3,
-            Name = "Maximilien Robespierre",
-            Profession = "Lawyer"
+            return await context.Characters
+                .Select(c => c.ToCharacterResponse())
+                .ToListAsync();
         }
-    ];
-    
-    public async Task<List<Character>> GetAllCharactersAsync()
+        catch (Exception e)
+        {
+            return [];
+        }
+    }
+ 
+    public async Task<CharacterResponse?> GetCharacterByIdAsync(int id)
     {
-        return await Task.FromResult(Characters);
+        try
+        {
+            var character = await context.Characters.FindAsync(id);
+            return character?.ToCharacterResponse();
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 
-    public async Task<Character?> GetCharacterByIdAsync(int id)
+    public async Task<CharacterResponse?> AddCharacterAsync(CharacterRequest request)
     {
-        return await Task.FromResult(Characters.FirstOrDefault(x => x.Id == id));
+        try
+        {
+            var result = await context.Characters
+                .AddAsync(request.ToCharacter()); 
+         
+            await context.SaveChangesAsync(); 
+            return result.Entity.ToCharacterResponse();
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
-
-    public async Task<Character> AddCharacterAsync(Character character)
+ 
+    public async Task<CharacterResponse?> UpdateCharacterAsync(int id, CharacterRequest request)
     {
-        throw new NotImplementedException();
-    }
-
-    public async Task<bool> UpdateCharacterAsync(Character character)
-    {
-        throw new NotImplementedException();
+        try
+        {
+            var character = await context.Characters.FindAsync(id);
+        
+            if (character is null)
+            {
+                return null;
+            }
+        
+            character.ApplyUpdate(request);
+            await context.SaveChangesAsync();
+            return character.ToCharacterResponse();;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 
     public async Task<bool> DeleteCharacterAsync(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var character = await context.Characters.FindAsync(id);
+            
+            if (character is null)
+            {
+                return false;
+            }
+            
+            context.Characters.Remove(character);
+            await context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 }
